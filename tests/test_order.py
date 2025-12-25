@@ -1,7 +1,6 @@
 import pytest
 import allure
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+
 
 
 class TestOrder:
@@ -61,9 +60,7 @@ class TestOrder:
             order_page.confirm_order()
         
         with allure.step("Проверяем отображение модального окна успеха"):
-            WebDriverWait(driver, 10).until(
-                EC.visibility_of_element_located(order_page.SUCCESS_MODAL)
-            )
+            order_page.wait_for_success_modal()
             assert order_page.is_success_modal_displayed(), \
                 "Модальное окно успешного оформления заказа не отображается"
         
@@ -99,7 +96,7 @@ class TestOrder:
             order_page.fill_second_page(
                 date="20.12.2025",
                 rental_period="сутки",
-                color="чёрный жемчуг"
+                color="серая безысходность"
             )
         
         with allure.step("Проверяем отображение модального окна подтверждения"):
@@ -110,8 +107,6 @@ class TestOrder:
             order_page.cancel_order()
         
         with allure.step("Проверяем, что остались на странице оформления"):
-            WebDriverWait(driver, 5).until(
-                EC.invisibility_of_element_located(order_page.CONFIRMATION_MODAL)
-            )
-            assert order_page.find_element(order_page.ORDER_BUTTON).is_displayed(), \
+            order_page.wait_for_confirmation_modal_to_disappear()
+            assert order_page.find_element(order_page.locators.ORDER_BUTTON).is_displayed(), \
                 "Не вернулись на страницу оформления после отмены"

@@ -8,3 +8,4 @@
 - `tests/` - тестовые сценарии
 - `conftest.py` - фикстуры Pytest
 - `requirements.txt` - зависимости проекта
+- `allure-report` - отчет allure_results

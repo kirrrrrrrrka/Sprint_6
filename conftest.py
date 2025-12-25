@@ -4,18 +4,25 @@ from selenium.webdriver.firefox.service import Service
 from webdriver_manager.firefox import GeckoDriverManager
 
 
-
 @pytest.fixture(scope="function")
 def driver():
     options = webdriver.FirefoxOptions()
     options.add_argument("--width=1920")
     options.add_argument("--height=1080")
     
-    
     driver = webdriver.Firefox(options=options)
-    
     driver.maximize_window()
+    
     yield driver
+    
+    # Закрываем все окна кроме основного
+    if len(driver.window_handles) > 1:
+        main_window = driver.window_handles[0]
+        for handle in driver.window_handles[1:]:
+            driver.switch_to.window(handle)
+            driver.close()
+        driver.switch_to.window(main_window)
+    
     driver.quit()
 
 

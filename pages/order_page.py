@@ -1,90 +1,84 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from .base_page import BasePage
+from .locators.order_page_locators import OrderPageLocators
 
 
 class OrderPage(BasePage):
-    # Page 1
-    NAME_FIELD = (By.XPATH, "//input[@placeholder='* Имя']")
-    SURNAME_FIELD = (By.XPATH, "//input[@placeholder='* Фамилия']")
-    ADDRESS_FIELD = (By.XPATH, "//input[@placeholder='* Адрес: куда привезти заказ']")
-    METRO_FIELD = (By.XPATH, "//input[@placeholder='* Станция метро']")
-    METRO_STATION = (By.XPATH, "//div[text()='Сокольники']")  # Updated to match actual station
-    PHONE_FIELD = (By.XPATH, "//input[@placeholder='* Телефон: на него позвонит курьер']")
-    NEXT_BUTTON = (By.XPATH, "//button[text()='Далее']")
-    
-    # Page 2
-    DATE_FIELD = (By.XPATH, "//input[@placeholder='* Когда привезти самокат']")
-    DATE_PICKER = (By.CLASS_NAME, "react-datepicker__day--020")  # Example for 20th day
-    RENTAL_PERIOD_FIELD = (By.CLASS_NAME, "Dropdown-control")
-    RENTAL_PERIOD_OPTION = (By.XPATH, "//div[text()='сутки']")
-    RENTAL_PERIOD_TWO_DAYS = (By.XPATH, "//div[text()='двое суток']")
-    COLOR_BLACK = (By.ID, "black")
-    COLOR_GREY = (By.ID, "gray")
-    COMMENT_FIELD = (By.XPATH, "//input[@placeholder='Комментарий для курьера']")
-    ORDER_BUTTON = (By.XPATH, "//button[contains(@class, 'Button_Middle') and text()='Заказать']")
-    
-    # Confirmation modal
-    CONFIRMATION_MODAL = (By.CLASS_NAME, "Order_Modal__YZ-d3")  # Updated locator
-    CONFIRM_YES_BUTTON = (By.XPATH, "//button[text()='Да']")
-    CONFIRM_NO_BUTTON = (By.XPATH, "//button[text()='Нет']")
-    
-    # Success modal
-    SUCCESS_MODAL = (By.CLASS_NAME, "Order_Modal__YZ-d3")  # Updated locator
-    SUCCESS_TITLE = (By.CLASS_NAME, "Order_ModalHeader__3FDaJ")  # Updated locator
-    ORDER_NUMBER = (By.CLASS_NAME, "Order_Text__2broi")  # Updated locator
+    def __init__(self, driver):
+        super().__init__(driver)
+        self.locators = OrderPageLocators()
 
     def fill_first_page(self, name, surname, address, phone):
-        self.find_element(self.NAME_FIELD).send_keys(name)
-        self.find_element(self.SURNAME_FIELD).send_keys(surname)
-        self.find_element(self.ADDRESS_FIELD).send_keys(address)
+        self.find_element(self.locators.NAME_FIELD).send_keys(name)
+        self.find_element(self.locators.SURNAME_FIELD).send_keys(surname)
+        self.find_element(self.locators.ADDRESS_FIELD).send_keys(address)
         
-        # Select metro station
-        self.find_element(self.METRO_FIELD).click()
-        self.find_element(self.METRO_STATION).click()
+        self.find_element(self.locators.METRO_FIELD).click()
+        self.find_element(self.locators.METRO_STATION).click()
         
-        self.find_element(self.PHONE_FIELD).send_keys(phone)
-        self.find_element(self.NEXT_BUTTON).click()
+        self.find_element(self.locators.PHONE_FIELD).send_keys(phone)
+        self.find_element(self.locators.NEXT_BUTTON).click()
 
     def fill_second_page(self, date, rental_period, color, comment=""):
-    # Set date
-        self.find_element(self.DATE_FIELD).send_keys(date)
-    # Закрыть календарь
-        from selenium.webdriver.common.keys import Keys
-        self.find_element(self.DATE_FIELD).send_keys(Keys.ESCAPE)
-    
-    # Select rental period
-        self.find_element(self.RENTAL_PERIOD_FIELD).click()
+        date_field = self.find_element(self.locators.DATE_FIELD)
+        date_field.clear()
+        date_field.send_keys(date)
+        
+        date_field.send_keys(Keys.ESCAPE)
+        
+        self.find_element(self.locators.RENTAL_PERIOD_FIELD).click()
         if rental_period == "сутки":
-            self.find_element(self.RENTAL_PERIOD_OPTION).click()
+            self.find_element(self.locators.RENTAL_PERIOD_OPTION).click()
         elif rental_period == "двое суток":
-            self.find_element(self.RENTAL_PERIOD_TWO_DAYS).click()
+            self.find_element(self.locators.RENTAL_PERIOD_TWO_DAYS).click()
         
-        # Select color
-        if color == "black":
-            self.find_element(self.COLOR_BLACK).click()
-        elif color == "grey":
-            self.find_element(self.COLOR_GREY).click()
+        if color == "серая безысходность" in color:
+            self.find_element(self.locators.COLOR_GREY).click()
+        else:
+            self.find_element(self.locators.COLOR_BLACK).click()
         
-        # Add comment if provided
         if comment:
-            self.find_element(self.COMMENT_FIELD).send_keys(comment)
+            self.find_element(self.locators.COMMENT_FIELD).send_keys(comment)
         
-        self.find_element(self.ORDER_BUTTON).click()
+        self.find_element(self.locators.ORDER_BUTTON).click()
+        
+    def wait_for_order_page_to_load(self):
+        """Ожидание загрузки страницы заказа"""
+        self.wait_for_element_to_be_visible(self.locators.NAME_FIELD)
+
+    def wait_for_success_modal(self):
+        """Ожидание появления модального окна успеха"""
+        self.wait_for_element_to_be_visible(self.locators.SUCCESS_MODAL)
+
+    def wait_for_confirmation_modal_to_disappear(self):
+        """Ожидание исчезновения модального окна подтверждения"""
+        from selenium.webdriver.support import expected_conditions as EC
+        from selenium.webdriver.support.wait import WebDriverWait
+        WebDriverWait(self.driver, 10).until(
+            EC.invisibility_of_element_located(self.locators.CONFIRMATION_MODAL)
+        )
 
     def confirm_order(self):
-        self.find_element(self.CONFIRM_YES_BUTTON).click()
+        self.find_element(self.locators.CONFIRM_YES_BUTTON).click()
 
     def cancel_order(self):
-        self.find_element(self.CONFIRM_NO_BUTTON).click()
+        self.find_element(self.locators.CONFIRM_NO_BUTTON).click()
 
     def get_success_message(self):
-        return self.find_element(self.SUCCESS_TITLE).text
+        return self.find_element(self.locators.SUCCESS_TITLE).text
 
     def get_order_number(self):
-        return self.find_element(self.ORDER_NUMBER).text
+        return self.find_element(self.locators.ORDER_NUMBER).text
 
     def is_confirmation_modal_displayed(self):
-        return self.find_element(self.CONFIRMATION_MODAL).is_displayed()
+        try:
+            return self.find_element(self.locators.CONFIRMATION_MODAL, timeout=5).is_displayed()
+        except:
+            return False
 
     def is_success_modal_displayed(self):
-        return self.find_element(self.SUCCESS_MODAL).is_displayed()
+        try:
+            return self.find_element(self.locators.SUCCESS_MODAL, timeout=5).is_displayed()
+        except:
+            return False

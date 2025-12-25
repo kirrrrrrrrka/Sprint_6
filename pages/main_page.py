@@ -1,61 +1,90 @@
 from selenium.webdriver.common.by import By
 from .base_page import BasePage
+from .locators.main_page_locators import MainPageLocators
+from data.faq_data import FAQ_DATA
 
 
 class MainPage(BasePage):
-    # FAQ section
-    FAQ_SECTION = (By.CLASS_NAME, "Home_FourPart__1uthg")  # Updated locator
-    FAQ_QUESTIONS = (By.CLASS_NAME, "accordion__button")  # Updated locator
-    FAQ_ANSWERS = (By.CLASS_NAME, "accordion__panel")  # Updated locator
-    
-    # FAQ questions texts
-    FAQ_QUESTION_1 = "Сколько это стоит? И как оплатить?"
-    FAQ_QUESTION_2 = "Хочу сразу несколько самокатов! Так можно?"
-    FAQ_QUESTION_3 = "Как рассчитывается время аренды?"
-    FAQ_QUESTION_4 = "Можно ли заказать самокат прямо на сегодня?"
-    FAQ_QUESTION_5 = "Можно ли продлить заказ или вернуть самокат раньше?"
-    FAQ_QUESTION_6 = "Вы привозите зарядку вместе с самокатом?"
-    FAQ_QUESTION_7 = "Можно ли отменить заказ?"
-    FAQ_QUESTION_8 = "Я живу за МКАДом, привезёте?"
-    
-    # Order buttons
-    ORDER_BUTTON_TOP = (By.CLASS_NAME, "Button_Button__ra12g")  # First order button
-    ORDER_BUTTON_BOTTOM = (By.XPATH, "//div[contains(@class, 'Home_FinishButton')]/button")  # Bottom order button
-    
-    # Logo
-    SCOOTER_LOGO = (By.CLASS_NAME, "Header_LogoScooter__3lsAR")  # Updated locator
-    YANDEX_LOGO = (By.CLASS_NAME, "Header_LogoYandex__3TSOI")  # Updated locator
+    def __init__(self, driver):
+        super().__init__(driver)
+        self.locators = MainPageLocators()
 
     def get_faq_questions(self):
-        return self.find_elements(self.FAQ_QUESTIONS)
+        return self.find_elements(self.locators.FAQ_QUESTIONS)
 
     def get_faq_answers(self):
-        return self.find_elements(self.FAQ_ANSWERS)
+        return self.find_elements(self.locators.FAQ_ANSWERS)
 
     def click_faq_question(self, index):
         questions = self.get_faq_questions()
         question = questions[index]
-        self.driver.execute_script("arguments[0].click();", question)
-        import time
-        time.sleep(0.3)
+        
+        answer = self.get_faq_answers()[index]
+        is_expanded_before = answer.is_displayed()
+        
+        self.execute_script("arguments[0].click();", question)
+        
+        # Ожидаем изменения состояния ответа
+        if not is_expanded_before:
+            # Если был свернут, ждем пока станет видимым
+            self.wait.until(
+                lambda driver: self.get_faq_answers()[index].is_displayed()
+            )
+        else:
+            # Если был развернут, ждем пока скроется
+            self.wait.until(
+                lambda driver: not self.get_faq_answers()[index].is_displayed()
+            )
+        
         return question
 
     def get_faq_answer_text(self, index):
         answers = self.get_faq_answers()
+        # Ждем, чтобы ответ был видимым перед получением текста
+        self.wait.until(
+            lambda driver: answers[index].is_displayed() and answers[index].text.strip() != ""
+        )
         return answers[index].text
 
+    def get_faq_question_text(self, index):
+        questions = self.get_faq_questions()
+        return questions[index].text
+
     def click_order_button_top(self):
-        order_buttons = self.find_elements(self.ORDER_BUTTON_TOP)
-        order_buttons[0].click()
+        top_buttons = self.find_elements(self.locators.ORDER_BUTTON_TOP)
+    
+    # Ищем кнопку с текстом "Заказать"
+        for button in top_buttons:
+            if "Заказать" in button.text:
+                button.click()
+                return
+    
+        top_buttons[0].click()
 
     def click_order_button_bottom(self):
-        self.scroll_to_element(self.find_element(self.ORDER_BUTTON_BOTTOM))
-        self.click_element(self.ORDER_BUTTON_BOTTOM)
+        bottom_button = self.find_element(self.locators.ORDER_BUTTON_BOTTOM)
+        
+        self.execute_script("arguments[0].click();", bottom_button)
 
     def click_scooter_logo(self):
-        logo = self.find_element(self.SCOOTER_LOGO)
-        self.driver.execute_script("arguments[0].click();", logo)
+        self.click_element(self.locators.SCOOTER_LOGO)
 
     def click_yandex_logo(self):
-        logo = self.find_element(self.YANDEX_LOGO)
-        self.driver.execute_script("arguments[0].click();", logo)
+        self.click_element(self.locators.YANDEX_LOGO)
+
+    def is_main_page(self):
+        """Проверка, что мы на главной странице"""
+        current_url = self.get_current_url()
+        return current_url == self.base_url
+
+    def get_expected_faq_answer(self, question_index):
+        """Получить ожидаемый текст ответа из данных"""
+        return FAQ_DATA[question_index]["answer"]
+    
+    def get_faq_question_count(self):
+        """Получить количество вопросов"""
+        return len(self.get_faq_questions())
+    
+    def wait_for_faq_section(self):
+        """Ожидание загрузки секции FAQ"""
+        self.wait_for_element_to_be_visible(self.locators.FAQ_SECTION)
