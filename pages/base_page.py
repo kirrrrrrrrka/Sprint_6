@@ -66,3 +66,21 @@ class BasePage:
         return WebDriverWait(self.driver, timeout).until(
             lambda driver: len(driver.window_handles) > len(current_handles)
         )
+    
+    def wait_for_url_contains(self, text, timeout=10):
+        """Ожидание, что URL содержит определенный текст"""
+        return WebDriverWait(self.driver, timeout).until(
+            EC.url_contains(text)
+        )
+    
+    def wait_for_url_matches_pattern(self, patterns, timeout=10):
+        """Ожидание, что URL соответствует одному из паттернов"""
+        return WebDriverWait(self.driver, timeout).until(
+            lambda driver: any(pattern in driver.current_url for pattern in patterns)
+        )
+    
+    def wait_for_element_text(self, locator, text, timeout=10):
+        """Ожидание определенного текста в элементе"""
+        return WebDriverWait(self.driver, timeout).until(
+            EC.text_to_be_present_in_element(locator, text)
+        )

@@ -2,11 +2,11 @@ import pytest
 import allure
 
 
-
 class TestOrder:
     
-    @allure.title("Оформление заказа через верхнюю кнопку")
-    @allure.description("Проверка полного флоу оформления заказа")
+    @allure.feature("Заказ самоката")
+    @allure.story("Позитивные сценарии")
+    @allure.title("Заполнение формы заказа с данными: {test_data[name]}")
     @pytest.mark.parametrize("order_button_position, test_data", [
         ("top", {
             "name": "Вася",
@@ -29,7 +29,8 @@ class TestOrder:
             "comment": "Оставьте у подъезда"
         })
     ])
-    def test_order_creation(self, main_page, order_page, driver, order_button_position, test_data):
+    def test_fill_order_form(self, main_page, order_page, order_button_position, test_data):
+        """Тест заполнения формы заказа"""
         with allure.step(f"Нажимаем кнопку 'Заказать' ({order_button_position})"):
             if order_button_position == "top":
                 main_page.click_order_button_top()
@@ -51,12 +52,57 @@ class TestOrder:
                 color=test_data["color"],
                 comment=test_data["comment"]
             )
+    
+    @allure.feature("Заказ самоката")
+    @allure.story("Позитивные сценарии")
+    @allure.title("Проверка отображения модального окна подтверждения заказа")
+    def test_confirmation_modal_displayed(self, main_page, order_page):
+        """Тест проверки отображения модального окна подтверждения"""
+        with allure.step("Нажимаем верхнюю кнопку 'Заказать'"):
+            main_page.click_order_button_top()
+        
+        with allure.step("Заполняем минимальные данные для заказа"):
+            order_page.fill_first_page(
+                name="Тест",
+                surname="Тестов",
+                address="Москва, тестовая улица",
+                phone="79999999999"
+            )
+        
+            order_page.fill_second_page(
+                date="20.12.2025",
+                rental_period="сутки",
+                color="серая безысходность"
+            )
         
         with allure.step("Проверяем отображение модального окна подтверждения"):
             assert order_page.is_confirmation_modal_displayed(), \
                 "Модальное окно подтверждения не отображается"
+    
+    @allure.feature("Заказ самоката")
+    @allure.story("Позитивные сценарии")
+    @allure.title("Проверка успешного оформления заказа")
+    def test_successful_order_creation(self, main_page, order_page):
+        """Тест успешного оформления заказа"""
+        with allure.step("Нажимаем верхнюю кнопку 'Заказать'"):
+            main_page.click_order_button_top()
         
-        with allure.step("Подтверждаем заказ"):
+        with allure.step("Заполняем форму заказа"):
+            order_page.fill_first_page(
+                name="Иван",
+                surname="Иванов",
+                address="Москва, Красная площадь 1",
+                phone="79161234567"
+            )
+        
+            order_page.fill_second_page(
+                date="25.12.2025",
+                rental_period="сутки",
+                color="чёрный жемчуг",
+                comment="Тестовый заказ"
+            )
+        
+        with allure.step("Подтверждаем заказ в модальном окне"):
             order_page.confirm_order()
         
         with allure.step("Проверяем отображение модального окна успеха"):
@@ -79,12 +125,15 @@ class TestOrder:
                 attachment_type=allure.attachment_type.TEXT
             )
     
-    @allure.title("Отмена заказа в модальном окне подтверждения")
-    def test_order_cancellation(self, main_page, order_page, driver):
+    @allure.feature("Заказ самоката")
+    @allure.story("Негативные сценарии")
+    @allure.title("Проверка отмены заказа")
+    def test_order_cancellation_modal_displayed(self, main_page, order_page):
+        """Тест проверки отображения модального окна отмены заказа"""
         with allure.step("Нажимаем верхнюю кнопку 'Заказать'"):
             main_page.click_order_button_top()
         
-        with allure.step("Заполняем минимальные данные для первой страницы"):
+        with allure.step("Заполняем минимальные данные для заказа"):
             order_page.fill_first_page(
                 name="Тест",
                 surname="Тестов",
@@ -92,7 +141,6 @@ class TestOrder:
                 phone="79999999999"
             )
         
-        with allure.step("Заполняем минимальные данные для второй страницы"):
             order_page.fill_second_page(
                 date="20.12.2025",
                 rental_period="сутки",
@@ -102,11 +150,36 @@ class TestOrder:
         with allure.step("Проверяем отображение модального окна подтверждения"):
             assert order_page.is_confirmation_modal_displayed(), \
                 "Модальное окно подтверждения не отображается"
+    
+    @allure.feature("Заказ самоката")
+    @allure.story("Негативные сценарии")
+    @allure.title("Отмена заказа в модальном окне подтверждения")
+    def test_order_cancellation_process(self, main_page, order_page):
+        """Тест процесса отмены заказа"""
+        with allure.step("Нажимаем верхнюю кнопку 'Заказать'"):
+            main_page.click_order_button_top()
+        
+        with allure.step("Заполняем минимальные данные для заказа"):
+            order_page.fill_first_page(
+                name="Тест",
+                surname="Тестов",
+                address="Москва, тестовая улица",
+                phone="79999999999"
+            )
+        
+            order_page.fill_second_page(
+                date="20.12.2025",
+                rental_period="сутки",
+                color="серая безысходность"
+            )
         
         with allure.step("Отменяем заказ"):
             order_page.cancel_order()
         
-        with allure.step("Проверяем, что остались на странице оформления"):
-            order_page.wait_for_confirmation_modal_to_disappear()
+        with allure.step("Проверяем, что модальное окно скрылось"):
+        
+            order_page.wait_for_element_to_disappear(order_page.locators.CONFIRMATION_MODAL, timeout=5)
+            
+
             assert order_page.find_element(order_page.locators.ORDER_BUTTON).is_displayed(), \
                 "Не вернулись на страницу оформления после отмены"

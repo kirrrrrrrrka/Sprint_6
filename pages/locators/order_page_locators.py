@@ -17,10 +17,12 @@ class OrderPageLocators:
     RENTAL_PERIOD_FIELD = (By.CLASS_NAME, "Dropdown-control")
     RENTAL_PERIOD_OPTION = (By.XPATH, "//div[text()='сутки']")
     RENTAL_PERIOD_TWO_DAYS = (By.XPATH, "//div[text()='двое суток']")
-    COLOR_BLACK = (By.ID, "black")
-    COLOR_GREY = (By.ID, "grey")
     COMMENT_FIELD = (By.XPATH, "//input[@placeholder='Комментарий для курьера']")
     ORDER_BUTTON = (By.XPATH, "//button[contains(@class, 'Button_Middle') and text()='Заказать']")
+    
+    # Color checkboxes - исправленные локаторы
+    COLOR_BLACK_CHECKBOX = (By.ID, "black")
+    COLOR_GREY_CHECKBOX = (By.ID, "grey")
     
     # Confirmation modal
     CONFIRMATION_MODAL = (By.CLASS_NAME, "Order_Modal__YZ-d3")
@@ -31,6 +33,3 @@ class OrderPageLocators:
     SUCCESS_MODAL = (By.CLASS_NAME, "Order_Modal__YZ-d3")
     SUCCESS_TITLE = (By.CLASS_NAME, "Order_ModalHeader__3FDaJ")
     ORDER_NUMBER = (By.CLASS_NAME, "Order_Text__2broi")
-    
-    COLOR_BLACK_CHECKBOX = (By.XPATH, "//label[contains(text(), 'чёрный жемчуг')]/input[@type='checkbox']")
-    COLOR_GREY_CHECKBOX = (By.XPATH, "//label[contains(text(), 'серая безысходность')]/input[@type='checkbox']")

@@ -1,5 +1,7 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 from .base_page import BasePage
 from .locators.order_page_locators import OrderPageLocators
 
@@ -24,24 +26,34 @@ class OrderPage(BasePage):
         date_field = self.find_element(self.locators.DATE_FIELD)
         date_field.clear()
         date_field.send_keys(date)
-        
         date_field.send_keys(Keys.ESCAPE)
         
         self.find_element(self.locators.RENTAL_PERIOD_FIELD).click()
-        if rental_period == "сутки":
-            self.find_element(self.locators.RENTAL_PERIOD_OPTION).click()
-        elif rental_period == "двое суток":
-            self.find_element(self.locators.RENTAL_PERIOD_TWO_DAYS).click()
+        rental_option_locator = (By.XPATH, f"//div[text()='{rental_period}']")
+        self.find_element(rental_option_locator).click()
         
-        if color == "серая безысходность" in color:
-            self.find_element(self.locators.COLOR_GREY).click()
-        else:
-            self.find_element(self.locators.COLOR_BLACK).click()
+        if color == "серая безысходность":
+            self.find_element(self.locators.COLOR_GREY_CHECKBOX).click()
+        elif color == "чёрный жемчуг":
+            self.find_element(self.locators.COLOR_BLACK_CHECKBOX).click()
         
         if comment:
             self.find_element(self.locators.COMMENT_FIELD).send_keys(comment)
         
         self.find_element(self.locators.ORDER_BUTTON).click()
+    
+    def select_rental_period(self, period):
+        """Выбор срока аренды"""
+        self.find_element(self.locators.RENTAL_PERIOD_FIELD).click()
+        period_locator = (By.XPATH, f"//div[text()='{period}']")
+        self.find_element(period_locator).click()
+    
+    def select_color(self, color):
+        """Выбор цвета самоката"""
+        if color == "серая безысходность":
+            self.find_element(self.locators.COLOR_GREY_CHECKBOX).click()
+        elif color == "чёрный жемчуг":
+            self.find_element(self.locators.COLOR_BLACK_CHECKBOX).click()
         
     def wait_for_order_page_to_load(self):
         """Ожидание загрузки страницы заказа"""
@@ -50,14 +62,10 @@ class OrderPage(BasePage):
     def wait_for_success_modal(self):
         """Ожидание появления модального окна успеха"""
         self.wait_for_element_to_be_visible(self.locators.SUCCESS_MODAL)
-
-    def wait_for_confirmation_modal_to_disappear(self):
-        """Ожидание исчезновения модального окна подтверждения"""
-        from selenium.webdriver.support import expected_conditions as EC
-        from selenium.webdriver.support.wait import WebDriverWait
-        WebDriverWait(self.driver, 10).until(
-            EC.invisibility_of_element_located(self.locators.CONFIRMATION_MODAL)
-        )
+    
+    def wait_for_confirmation_modal(self):
+        """Ожидание появления модального окна подтверждения"""
+        self.wait_for_element_to_be_visible(self.locators.CONFIRMATION_MODAL)
 
     def confirm_order(self):
         self.find_element(self.locators.CONFIRM_YES_BUTTON).click()

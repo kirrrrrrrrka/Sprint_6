@@ -88,3 +88,30 @@ class MainPage(BasePage):
     def wait_for_faq_section(self):
         """Ожидание загрузки секции FAQ"""
         self.wait_for_element_to_be_visible(self.locators.FAQ_SECTION)
+
+    def check_yandex_redirect(self):
+        """Проверка редиректа на Яндекс/Дзен после клика по логотипу"""
+        # Запоминаем текущее окно
+        main_window = self.get_current_window_handle()
+    
+        # Кликаем на логотип Яндекса
+        self.click_element(self.locators.YANDEX_LOGO)
+    
+        # Ждем открытия нового окна
+        self.wait_for_new_window([main_window])
+        
+        # Находим новое окно
+        new_window = [window for window in self.get_window_handles() 
+                     if window != main_window][0]
+        self.switch_to_window(new_window)
+    
+        # Ожидаем редирект на Дзен или Яндекс
+        self.wait_for_url_matches_pattern(["dzen.ru", "yandex.ru"])
+        
+        # Получаем текущий URL
+        current_url = self.get_current_url()
+        
+        # Возвращаемся в основное окно
+        self.switch_to_window(main_window)
+        
+        return current_url

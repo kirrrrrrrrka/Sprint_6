@@ -38,30 +38,8 @@ class TestFAQ:
     @allure.story("Переход по логотипам")
     @allure.title("Проверка перехода на Дзен по логотипу Яндекса")
     def test_yandex_logo_redirect(self, main_page):
-        with allure.step("Запоминаем текущее окно"):
-            main_window = main_page.get_current_window_handle()
-    
-        with allure.step("Кликаем на логотип Яндекса"):
-            main_page.click_yandex_logo()
-    
-        with allure.step("Ждем открытия нового окна"):
-            main_page.wait_for_new_window([main_window])
+        with allure.step("Проверяем редирект на Яндекс/Дзен"):
+            redirected_url = main_page.check_yandex_redirect()
             
-            # Находим новое окно
-            new_window = [window for window in main_page.get_window_handles() 
-                         if window != main_window][0]
-            main_page.switch_to_window(new_window)
-    
-        with allure.step("Проверяем, что перешли на страницу Дзен или Яндекс"):
-            # Даем время для редиректов
-            main_page.wait.until(
-                lambda driver: "dzen.ru" in driver.current_url or "yandex.ru" in driver.current_url
-            )
-            
-            current_url = main_page.get_current_url()
-            
-            assert any(domain in current_url for domain in ["dzen.ru", "yandex.ru"]), \
-                f"Ожидался переход на dzen.ru или yandex.ru, но получен URL: {current_url}"
-        
-    
-        main_page.switch_to_window(main_window)
+            assert any(domain in redirected_url for domain in ["dzen.ru", "yandex.ru"]), \
+                f"Ожидался переход на dzen.ru или yandex.ru, но получен URL: {redirected_url}"
