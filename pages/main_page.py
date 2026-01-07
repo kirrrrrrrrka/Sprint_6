@@ -1,7 +1,10 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 from .base_page import BasePage
 from .locators.main_page_locators import MainPageLocators
 from data.faq_data import FAQ_DATA
+import allure
 
 
 class MainPage(BasePage):
@@ -24,14 +27,11 @@ class MainPage(BasePage):
         
         self.execute_script("arguments[0].click();", question)
         
-        # Ожидаем изменения состояния ответа
         if not is_expanded_before:
-            # Если был свернут, ждем пока станет видимым
             self.wait.until(
                 lambda driver: self.get_faq_answers()[index].is_displayed()
             )
         else:
-            # Если был развернут, ждем пока скроется
             self.wait.until(
                 lambda driver: not self.get_faq_answers()[index].is_displayed()
             )
@@ -40,7 +40,6 @@ class MainPage(BasePage):
 
     def get_faq_answer_text(self, index):
         answers = self.get_faq_answers()
-        # Ждем, чтобы ответ был видимым перед получением текста
         self.wait.until(
             lambda driver: answers[index].is_displayed() and answers[index].text.strip() != ""
         )
@@ -52,19 +51,24 @@ class MainPage(BasePage):
 
     def click_order_button_top(self):
         top_buttons = self.find_elements(self.locators.ORDER_BUTTON_TOP)
-    
-    # Ищем кнопку с текстом "Заказать"
         for button in top_buttons:
             if "Заказать" in button.text:
                 button.click()
                 return
-    
         top_buttons[0].click()
 
     def click_order_button_bottom(self):
         bottom_button = self.find_element(self.locators.ORDER_BUTTON_BOTTOM)
-        
         self.execute_script("arguments[0].click();", bottom_button)
+
+    def click_order_button(self, position):
+        """Клик по кнопке заказа в указанной позиции"""
+        if position == "top":
+            self.click_order_button_top()
+        elif position == "bottom":
+            self.click_order_button_bottom()
+        else:
+            raise ValueError(f"Неизвестная позиция кнопки: {position}")
 
     def click_scooter_logo(self):
         self.click_element(self.locators.SCOOTER_LOGO)
@@ -88,30 +92,30 @@ class MainPage(BasePage):
     def wait_for_faq_section(self):
         """Ожидание загрузки секции FAQ"""
         self.wait_for_element_to_be_visible(self.locators.FAQ_SECTION)
-
-    def check_yandex_redirect(self):
-        """Проверка редиректа на Яндекс/Дзен после клика по логотипу"""
-        # Запоминаем текущее окно
-        main_window = self.get_current_window_handle()
     
-        # Кликаем на логотип Яндекса
-        self.click_element(self.locators.YANDEX_LOGO)
-    
-        # Ждем открытия нового окна
-        self.wait_for_new_window([main_window])
+    def check_yandex_redirect_to_dzen(self):
+        """Проверка редиректа на Яндекс.Дзен (https://dzen.ru/)"""
+        with allure.step("Запоминаем текущее окно"):
+            main_window = self.get_current_window_handle()
         
-        # Находим новое окно
-        new_window = [window for window in self.get_window_handles() 
-                     if window != main_window][0]
-        self.switch_to_window(new_window)
-    
-        # Ожидаем редирект на Дзен или Яндекс
-        self.wait_for_url_matches_pattern(["dzen.ru", "yandex.ru"])
+        with allure.step("Кликаем на логотип Яндекса"):
+            self.click_element(self.locators.YANDEX_LOGO)
         
-        # Получаем текущий URL
-        current_url = self.get_current_url()
+        with allure.step("Ждем открытия нового окна"):
+            self.wait_for_new_window([main_window])
+            
+            new_window = [window for window in self.get_window_handles() 
+                         if window != main_window][0]
+            self.switch_to_window(new_window)
         
-        # Возвращаемся в основное окно
-        self.switch_to_window(main_window)
+        with allure.step("Ожидаем редирект на Яндекс.Дзен"):
+            WebDriverWait(self.driver, 10).until(
+                EC.url_contains("dzen.ru")
+            )
+            
+            current_url = self.get_current_url()
+            
+        with allure.step("Возвращаемся в основное окно"):
+            self.switch_to_window(main_window)
         
         return current_url
