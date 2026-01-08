@@ -14,7 +14,7 @@ class OrderPage(BasePage):
         self.find_element(self.locators.SURNAME_FIELD).send_keys(surname)
         self.find_element(self.locators.ADDRESS_FIELD).send_keys(address)
         
-        # Выбор станции метро (используем переданный параметр или значение по умолчанию)
+        # Выбор метро
         self.select_metro_station(metro_station)
         
         self.find_element(self.locators.PHONE_FIELD).send_keys(phone)
@@ -30,13 +30,13 @@ class OrderPage(BasePage):
         # Заполнение даты
         self.set_delivery_date(date)
         
-        # Выбор срока аренды
+        # срок аренды
         self.select_rental_period(rental_period)
         
-        # Выбор цвета
+        # выбор цвета
         self.select_color(color)
         
-        # Заполнение комментария
+        # заполнение комментария
         if comment:
             self.find_element(self.locators.COMMENT_FIELD).send_keys(comment)
 

@@ -2,7 +2,7 @@ from selenium.webdriver.common.by import By
 
 
 class MainPageLocators:
-    # FAQ section
+    # FAQ
     FAQ_SECTION = (By.CLASS_NAME, "Home_FourPart__1uthg")
     FAQ_QUESTIONS = (By.CLASS_NAME, "accordion__button")
     FAQ_ANSWERS = (By.CLASS_NAME, "accordion__panel")

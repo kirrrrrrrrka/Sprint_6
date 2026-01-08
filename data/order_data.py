@@ -16,7 +16,7 @@ ORDER_TEST_DATA = [
         "phone": "79669696996",
         "date": "21.12.2025",
         "rental_period": "двое суток",
-        "color": "чёрный жемчуг",
+        "color": "black",
         "comment": "Оставьте у подъезда"
     }
 ]
