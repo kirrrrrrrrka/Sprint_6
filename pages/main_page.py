@@ -109,9 +109,7 @@ class MainPage(BasePage):
             self.switch_to_window(new_window)
         
         with allure.step("Ожидаем редирект на Яндекс.Дзен"):
-            WebDriverWait(self.driver, 10).until(
-                EC.url_contains("dzen.ru")
-            )
+            self.wait_for_url_contains("dzen.ru")
             
             current_url = self.get_current_url()
             
@@ -119,3 +117,9 @@ class MainPage(BasePage):
             self.switch_to_window(main_window)
         
         return current_url
+    
+    def wait_for_element_to_have_text(self, element, text, timeout=10):
+        """Ожидание, что элемент содержит определенный текст"""
+        self.wait.until(
+            lambda driver: text in element.text
+        )

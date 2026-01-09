@@ -2,6 +2,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from .base_page import BasePage
 from .locators.order_page_locators import OrderPageLocators
+import allure  # Добавляем импорт allure
 
 
 class OrderPage(BasePage):
@@ -73,10 +74,10 @@ class OrderPage(BasePage):
         self.wait_for_element_to_be_visible(self.locators.CONFIRMATION_MODAL)
 
     def confirm_order(self):
-        self.find_element(self.locators.CONFIRM_YES_BUTTON).click()
+        self.click_element(self.locators.CONFIRM_YES_BUTTON)
 
     def cancel_order(self):
-        self.find_element(self.locators.CONFIRM_NO_BUTTON).click()
+        self.click_element(self.locators.CONFIRM_NO_BUTTON)
 
     def get_success_message(self):
         return self.find_element(self.locators.SUCCESS_TITLE).text
@@ -95,3 +96,7 @@ class OrderPage(BasePage):
             return self.find_element(self.locators.SUCCESS_MODAL, timeout=5).is_displayed()
         except:
             return False
+    
+    def wait_for_element_text_to_be(self, locator, text, timeout=10):
+        """Ожидание определенного текста в элементе"""
+        self.wait_for_element_text(locator, text, timeout)
