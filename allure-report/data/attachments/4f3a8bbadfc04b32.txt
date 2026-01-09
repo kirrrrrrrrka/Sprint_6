@@ -1,0 +1,1 @@
+Текущий URL после перехода: https://sso.passport.yandex.ru/push?uuid=27b724bd-994a-4238-b627-1108553d039f&retpath=https%3A%2F%2Fdzen.ru%2F%3Fyredirect%3Dtrue%26is_autologin_ya%3Dtrue

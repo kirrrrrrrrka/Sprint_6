@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+pytest.ini
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pyvenv.cfg
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+*.egg-info/
+.eggs/
+dist/
+build/
+sdist/
+wheels/
+*.egg
+MANIFEST
+*.manifest
+*.spec
+
+# Testing
+allure-results/
+test-results/
+*.xml
+*.trx
+.reports/
+htmlcov/
+.coverage
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.orig
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Selenium
+*.log
+geckodriver.log
+chromedriver.log
+*.exe
+/drivers/
+
+# Virtual Environment
+*.venv
